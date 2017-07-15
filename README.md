@@ -84,16 +84,16 @@ Additionally, since version 59, you can use the `--headless` flag to start Chrom
 
 The [Chrome DevTools Protocol][1] is divided into a number of domains ([Page][3], [DOM][4], [Debugger][5], [Network][6], etc.). Each domain defines a number of **commands** it supports and **events** it generates. 
 
-ChromeRemote provides a simple API that lets you send commands and handle events of any of the domains in the protocol.
+ChromeRemote provides a simple API that lets you send commands, and handle events of any of the domains in the protocol.
 
 To start with, you need an instance of the `ChromeRemote` class.
 
 ```ruby
 chrome = ChromeRemote.new host: 'localhost', # optional, default: localhost
-                          port: 9992         # optional, default: 992
+                          port: 9992         # optional, default: 9992
 ```
 
-Now, to send a command, use the `ChromeRemote#send_cmd` method. This is how you can send the command [Page.navigate][7]:
+Now, to send commands, ChromeRemote provides the `ChromeRemote#send_cmd` method. For example, this is how you make Chrome navigate to a url by sending the [Page.navigate][7] command:
 
 ```ruby
 chrome = ChromeRemote.new
@@ -101,41 +101,45 @@ chrome.send_cmd "Page.navigate", url: "https://github.com"
 # => {:frameId=>1234}
 ```
 
-To tackle events, you have several options. First of all, bear in mind that you need to enable events for any domain you're interested. You only need to do this once per domain:
+To tackle events, you have several options but, first of all, you need to enable events for any domain you're interested in. You only need to do this once per domain:
 
 ```ruby
 chrome = ChromeRemote.new
 chrome.send_cmd "Network.enable"
 ```
 
-Now, you can use the `ChromeRemote#on` method to subscribe to an event. For instance, this is how you can subscribe to the [Network.requestWillBeSent][8] event:
+Now, you can use the `ChromeRemote#on` method to subscribe to an event. For instance, this is how you subscribe to the [Network.requestWillBeSent][8] event:
 
 ```ruby
 chrome = ChromeRemote.new
 chrome.send_cmd "Network.enable"
+
 chrome.on "Network.requestWillBeSent" do |params|
   puts params["request"]["url"]
 end
 ```
     
-With the `ChromeRemote#wait_for` you can wait until the next time a given event is triggered. For example, the following snippet navigates to a page and waits for the [Page.loadEventFired][9] event to happen:
+With the `ChromeRemote#wait_for` method, you can wait until the next time a given event is triggered. For example, the following snippet navigates to a page and waits for the [Page.loadEventFired][9] event to happen:
 
 ```ruby
 chrome = ChromeRemote.new
 chrome.send_cmd "Page.navigate", url: "https://github.com"
+
 chrome.wait_for "Page.loadEventFired"
 # => {:timestamp=>34}
 ```
 
-In certain occasions, after you have subscribed to one or several events you may just want to process messages indefinitely, and let the event handlers process any event that may happen until you kill your script. For those cases, ChromeRemote provides the `ChromeRemote#listen` method:
+In certain occasions, after you have subscribed to one or several events, you may just want to process messages indefinitely, and let the event handlers process any event that may happen until you kill your script. For those cases, ChromeRemote provides the `ChromeRemote#listen` method:
 
 ```ruby
 chrome = ChromeRemote.new
 chrome.send_cmd "Network.enable"
+
 chrome.on "Network.requestWillBeSent" do |params|
   puts params["request"]["url"]
 end
-chrome.listen # will process messages indefinitely
+
+chrome.listen # will process incoming messages indefinitely
 ```
 
 Finally, you have `ChromeRemote#listen_until` that will listen and process incoming messages but only until a certain condition is met. For instance, the following snippet waits until 5 requests are received and then continues:

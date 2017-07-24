@@ -40,7 +40,7 @@ class WebSocketClient
   end
   
   def read_msg
-    driver.parse(read) until msg = messages.pop
+    driver.parse(read) until msg = messages.shift
     msg
   end
   
@@ -71,7 +71,7 @@ class ChromeRemote
   end
 
   def send_cmd(command, params = {})  
-    id = rand(9999)
+    id = generate_unique_id
     @ws.send_msg({method: command, params: params, id: id}.to_json)
     response = nil
     loop do
@@ -82,6 +82,14 @@ class ChromeRemote
   end
 
   def read_msg
-    JSON.parse @ws.read_msg
+    msg = @ws.read_msg
+    JSON.parse msg
+  end
+
+  private
+
+  def generate_unique_id
+    @ids ||= 0
+    @ids += 1
   end
 end

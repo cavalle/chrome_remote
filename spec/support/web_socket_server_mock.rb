@@ -1,11 +1,15 @@
 require "em-websocket"
 
 class WebSocketServerMock
-  attr_reader :host, :port, :msg_handlers, :server, :thread
+  attr_reader :host, :port, :msg_handlers, :server, :thread, :path, :query
 
-  def initialize(host: nil, port: nil)
-    @host = host
-    @port = port
+  def initialize(url)
+    uri = URI.parse(url)
+    @host  = uri.host
+    @port  = uri.port
+    @path  = uri.path
+    @query = uri.query
+
     @msg_handlers = []
 
     start_reactor
@@ -21,8 +25,8 @@ class WebSocketServerMock
   end
 
   def close
-    EM.stop
-    thread.join
+    EM.stop if EM.reactor_running?
+    thread.join rescue nil #FIXME: Find other way to avoid thread exceptions to be raised again
   end
 
   def has_satisfied_all_expectations?
@@ -32,13 +36,24 @@ class WebSocketServerMock
   private
 
   def start_reactor
-    Thread.abort_on_exception = true
     @thread = Thread.new { EM.run }    
+    thread.abort_on_exception = true
+
     while not EM.reactor_running?; end
   end
 
   def start_server
     EM::WebSocket.run(:host => host, :port => port) do |ws|
+      ws.onopen do |handshake|
+        if handshake.path != path
+          raise "Expected WebSocket path: #{path}. Got: #{handshake.path}"
+        end
+
+        if handshake.query_string != query
+          raise "Expected WebSocket query_string: '#{query}'. Got: '#{handshake.query_string}'"
+        end
+      end
+
       ws.onmessage do |msg|
         handler = msg_handlers.shift
         handler.call(msg)

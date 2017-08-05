@@ -1,9 +1,9 @@
-require "chrome_remote/web_socket"
+require "chrome_remote/web_socket_client"
 
 module ChromeRemote
   class Client
     def initialize
-      @ws = WebSocket.new("ws://127.0.0.1:9222/ws")
+      @ws = WebSocketClient.new("ws://127.0.0.1:9222/ws")
     end
   
     def send_cmd(command, params = {})  

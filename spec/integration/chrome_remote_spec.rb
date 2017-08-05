@@ -31,7 +31,7 @@ RSpec.describe ChromeRemote do
                                  result: expected_result }.to_json)
     end
 
-    chrome = ChromeRemote.new
+    chrome = ChromeRemote.client
 
     response = chrome.send_cmd "Page.navigate", url: "https://github.com"
 

@@ -90,7 +90,7 @@ To start with, you need an instance of the `ChromeRemote` class.
 
 ```ruby
 chrome = ChromeRemote.client host: 'localhost', # optional, default: localhost
-                          port: 9992         # optional, default: 9992
+                             port: 9992         # optional, default: 9992
 ```
 
 Now, to send commands, ChromeRemote provides the `ChromeRemote#send_cmd` method. For example, this is how you make Chrome navigate to a url by sending the [Page.navigate][7] command:

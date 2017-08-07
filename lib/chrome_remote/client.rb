@@ -29,6 +29,11 @@ module ChromeRemote
     def listen
       read_until { false }
     end
+
+    def wait_for(event_name)
+      msg = read_until { |msg| msg["method"] == event_name }
+      msg["params"]
+    end
   
     private
   

@@ -9,9 +9,9 @@ RSpec.describe ChromeRemote do
     end
   end
 
-  subject { ChromeRemote.client }
-
+  # Server needs to be running before the client
   let!(:server) { WebSocketTestServer.new("ws://127.0.0.1:9222/ws?active=true") }
+  let!(:client) { ChromeRemote.client }
 
   after(:each) { server.close }
 
@@ -36,7 +36,7 @@ RSpec.describe ChromeRemote do
                           result: expected_result }.to_json)
       end
 
-      response = subject.send_cmd "Page.navigate", url: "https://github.com"
+      response = client.send_cmd "Page.navigate", url: "https://github.com"
 
       expect(response).to eq(expected_result)
       expect(server).to have_satisfied_all_expectations
@@ -47,11 +47,11 @@ RSpec.describe ChromeRemote do
     it "subscribes to events using the DevTools protocol" do
       received_events = []
 
-      subject.on "Network.requestWillBeSent" do |params|
+      client.on "Network.requestWillBeSent" do |params|
         received_events << ["Network.requestWillBeSent", params]
       end
 
-      subject.on "Page.loadEventFired" do |params|
+      client.on "Page.loadEventFired" do |params|
         received_events << ["Page.loadEventFired", params]
       end
 
@@ -63,7 +63,7 @@ RSpec.describe ChromeRemote do
 
       expect(received_events).to be_empty # we haven't listened yet
 
-      subject.listen_until { received_events.size == 3 }
+      client.listen_until { received_events.size == 3 }
 
       expect(received_events).to eq([
         ["Network.requestWillBeSent", { "param" => 1}],
@@ -75,11 +75,11 @@ RSpec.describe ChromeRemote do
     it "allows to subscribe multiple times to the same event" do
       received_events = []
       
-      subject.on "Network.requestWillBeSent" do |params|
+      client.on "Network.requestWillBeSent" do |params|
         received_events << :first_handler
       end
 
-      subject.on "Network.requestWillBeSent" do |params|
+      client.on "Network.requestWillBeSent" do |params|
         received_events << :second_handler
       end
 
@@ -87,7 +87,7 @@ RSpec.describe ChromeRemote do
 
       server.send_msg({ method: "Network.requestWillBeSent" }.to_json)
 
-      subject.listen_until { received_events.size == 2 }
+      client.listen_until { received_events.size == 2 }
 
       expect(received_events).to include(:first_handler)
       expect(received_events).to include(:second_handler)
@@ -96,7 +96,7 @@ RSpec.describe ChromeRemote do
     it "processes events when sending commands" do
       received_events = []
       
-      subject.on "Network.requestWillBeSent" do |params|
+      client.on "Network.requestWillBeSent" do |params|
         received_events << :first_handler
       end
 
@@ -108,18 +108,18 @@ RSpec.describe ChromeRemote do
 
       expect(received_events).to be_empty # we haven't listened yet
 
-      subject.send_cmd "Page.navigate"
+      client.send_cmd "Page.navigate"
 
       expect(received_events).to eq([:first_handler])
     end
 
     it "subscribes to events and process them indefinitely" do
-      expected_events = rand(10)
+      expected_events = rand(10) + 1
       received_events = 0
 
       TestError = Class.new(StandardError)
       
-      subject.on "Network.requestWillBeSent" do |params|
+      client.on "Network.requestWillBeSent" do |params|
         received_events += 1
         raise TestError if received_events == expected_events
       end
@@ -130,7 +130,7 @@ RSpec.describe ChromeRemote do
 
       expect(received_events).to be_zero # we haven't listened yet
 
-      expect{subject.listen}.to raise_error(TestError)
+      expect{client.listen}.to raise_error(TestError)
 
       expect(received_events).to be(expected_events)
     end
@@ -138,28 +138,21 @@ RSpec.describe ChromeRemote do
 
   describe "Waiting for events" do
     it "waits for the next instance of an event" do
-      server.expect_msg do |msg|
-        msg = JSON.parse(msg)
-        server.send_msg({ id: msg["id"] }.to_json)
-
-        server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 1 } }.to_json)
-        server.send_msg({ method: "Page.loadEventFired",       params: { "event" => 2 } }.to_json)
-        server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 3 } }.to_json)
-      end
-
-      subject.send_cmd "Page.navigate", url: "https://github.com"
-      
-      result = subject.wait_for("Page.loadEventFired")
+      server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 1 } }.to_json)
+      server.send_msg({ method: "Page.loadEventFired",       params: { "event" => 2 } }.to_json)
+      server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 3 } }.to_json)
+    
+      result = client.wait_for("Page.loadEventFired")
       expect(result).to eq({ "event" => 2 })
 
-      result = subject.wait_for("Network.requestWillBeSent")
+      result = client.wait_for("Network.requestWillBeSent")
       expect(result).to eq({ "event" => 3 })
     end
 
     it "subscribes and waits for the same event" do
       received_events = 0
       
-      subject.on "Network.requestWillBeSent" do |params|
+      client.on "Network.requestWillBeSent" do |params|
         received_events += 1
       end
 
@@ -167,7 +160,7 @@ RSpec.describe ChromeRemote do
 
       expect(received_events).to be_zero # we haven't listened yet
 
-      result = subject.wait_for("Network.requestWillBeSent")
+      result = client.wait_for("Network.requestWillBeSent")
       expect(received_events).to eq(1)
     end
   end

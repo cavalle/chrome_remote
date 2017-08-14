@@ -21,8 +21,6 @@ RSpec.describe ChromeRemote do
 
   after(:each) { server.close }
 
-  
-
   describe "Sending commands" do
     it "sends commands using the DevTools protocol" do
       expected_result = { "frameId" => rand(9999) }

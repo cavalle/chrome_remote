@@ -7,6 +7,9 @@ class WebSocketServerMock
     uri = URI.parse(url)
     @host  = uri.host
     @port  = uri.port
+    @path  = uri.path
+    @query = uri.query
+
     @msg_handlers = []
 
     start_reactor
@@ -41,6 +44,16 @@ class WebSocketServerMock
 
   def start_server
     EM::WebSocket.run(:host => host, :port => port) do |ws|
+      ws.onopen do |handshake|
+        if handshake.path != path
+          raise "Expected WebSocket path: #{path}. Got: #{handshake.path}"
+        end
+
+        if handshake.query_string != query
+          raise "Expected WebSocket query_string: '#{query}'. Got: '#{handshake.query_string}'"
+        end
+      end
+
       ws.onmessage do |msg|
         handler = msg_handlers.shift
         handler.call(msg)

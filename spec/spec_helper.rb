@@ -24,8 +24,7 @@ class WebServiceServerMock
     EM::WebSocket.run(:host => host, :port => port) do |ws|
       @ws = ws
       ws.onmessage { |msg|
-        puts "Recieved message: #{msg}"
-        handler = @msg_handlers.pop
+        handler = @msg_handlers.shift
         handler.call(msg)
       }
     end

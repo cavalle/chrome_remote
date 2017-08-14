@@ -12,7 +12,7 @@ The following snippet navigates to `https://github.com`, dumps any request made 
 require 'chrome_remote'
 require 'base64'
 
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 
 # Enable events
 chrome.send_cmd "Network.enable"
@@ -89,14 +89,14 @@ ChromeRemote provides a simple API that lets you send commands, and handle event
 To start with, you need an instance of the `ChromeRemote` class.
 
 ```ruby
-chrome = ChromeRemote.new host: 'localhost', # optional, default: localhost
+chrome = ChromeRemote.client host: 'localhost', # optional, default: localhost
                           port: 9992         # optional, default: 9992
 ```
 
 Now, to send commands, ChromeRemote provides the `ChromeRemote#send_cmd` method. For example, this is how you make Chrome navigate to a url by sending the [Page.navigate][7] command:
 
 ```ruby
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 chrome.send_cmd "Page.navigate", url: "https://github.com"
 # => {:frameId=>1234}
 ```
@@ -104,14 +104,14 @@ chrome.send_cmd "Page.navigate", url: "https://github.com"
 To tackle events, you have several options but, first of all, you need to enable events for any domain you're interested in. You only need to do this once per domain:
 
 ```ruby
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 chrome.send_cmd "Network.enable"
 ```
 
 Now, you can use the `ChromeRemote#on` method to subscribe to an event. For instance, this is how you subscribe to the [Network.requestWillBeSent][8] event:
 
 ```ruby
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 chrome.send_cmd "Network.enable"
 
 chrome.on "Network.requestWillBeSent" do |params|
@@ -122,7 +122,7 @@ end
 With the `ChromeRemote#wait_for` method, you can wait until the next time a given event is triggered. For example, the following snippet navigates to a page and waits for the [Page.loadEventFired][9] event to happen:
 
 ```ruby
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 chrome.send_cmd "Page.navigate", url: "https://github.com"
 
 chrome.wait_for "Page.loadEventFired"
@@ -132,7 +132,7 @@ chrome.wait_for "Page.loadEventFired"
 In certain occasions, after you have subscribed to one or several events, you may just want to process messages indefinitely, and let the event handlers process any event that may happen until you kill your script. For those cases, ChromeRemote provides the `ChromeRemote#listen` method:
 
 ```ruby
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 chrome.send_cmd "Network.enable"
 
 chrome.on "Network.requestWillBeSent" do |params|
@@ -145,7 +145,7 @@ chrome.listen # will process incoming messages indefinitely
 Finally, you have `ChromeRemote#listen_until` that will listen and process incoming messages but only until a certain condition is met. For instance, the following snippet waits until 5 requests are received and then continues:
 
 ```ruby
-chrome = ChromeRemote.new
+chrome = ChromeRemote.client
 chrome.send_cmd "Network.enable"
 
 requests = 0

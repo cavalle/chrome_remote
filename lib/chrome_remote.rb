@@ -1,6 +1,7 @@
 require "chrome_remote/version"
 require "chrome_remote/client"
 require "json"
+require "net/http"
 
 module ChromeRemote
   class << self

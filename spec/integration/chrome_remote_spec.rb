@@ -7,11 +7,21 @@ RSpec.describe ChromeRemote do
     Timeout::timeout(5) { example.run }
   end
 
+  WS_URL = "ws://127.0.0.1:9222/devtools/page/4a64d04e-f346-4460-be97-98e4a3dbf2fc"
+
+  before(:each) do
+    stub_request(:get, "http://127.0.0.1:9222/json").to_return(
+      body: [{ "type": "page", "webSocketDebuggerUrl": WS_URL }].to_json
+    )
+  end
+
   # Server needs to be running before the client
-  let!(:server) { WebSocketTestServer.new("ws://127.0.0.1:9222/ws?active=true") }
+  let!(:server) { WebSocketTestServer.new(WS_URL) }
   let!(:client) { ChromeRemote.client }
 
   after(:each) { server.close }
+
+  
 
   describe "Sending commands" do
     it "sends commands using the DevTools protocol" do

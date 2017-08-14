@@ -53,9 +53,9 @@ RSpec.describe ChromeRemote do
         received_events << ["Page.loadEventFired", params]
       end
 
-      server.send_msg({ method: "RandomEvent" }.to_json)
+      server.send_msg({ method: "RandomEvent" }.to_json) # to be ignored
       server.send_msg({ method: "Network.requestWillBeSent", params: { "param" => 1} }.to_json)
-      server.send_msg({ id: 999, result: { "frameId" => 2 } }.to_json)
+      server.send_msg({ id: 999, result: { "frameId" => 2 } }.to_json) # to be ignored
       server.send_msg({ method: "Page.loadEventFired",       params: { "param" => 2} }.to_json)
       server.send_msg({ method: "Network.requestWillBeSent", params: { "param" => 3} }.to_json)
 
@@ -119,6 +119,7 @@ RSpec.describe ChromeRemote do
       
       client.on "Network.requestWillBeSent" do |params|
         received_events += 1
+        # the client will listen indefinitely, raise an expection to get out of the loop
         raise TestError if received_events == expected_events
       end
       
@@ -136,6 +137,8 @@ RSpec.describe ChromeRemote do
 
   describe "Waiting for events" do
     it "waits for the next instance of an event" do
+      # first two messages are to be ignored
+      server.send_msg({ id: 99 }.to_json)
       server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 1 } }.to_json)
       server.send_msg({ method: "Page.loadEventFired",       params: { "event" => 2 } }.to_json)
       server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 3 } }.to_json)

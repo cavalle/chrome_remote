@@ -1,6 +1,6 @@
 require "em-websocket"
 
-class WebSocketServerMock
+class WebSocketTestServer
   attr_reader :host, :port, :msg_handlers, :server, :thread, :path, :query
 
   def initialize(url)
@@ -16,11 +16,11 @@ class WebSocketServerMock
     start_server
   end
 
-  def expect_message(&block)
+  def expect_msg(&block)
     msg_handlers << block
   end
 
-  def send_message(msg)
+  def send_msg(msg)
     server.send msg
   end
 

@@ -1,5 +1,6 @@
 require "bundler/setup"
 require "chrome_remote"
+require "byebug"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

@@ -2,10 +2,11 @@ require "chrome_remote/web_socket_client"
 
 module ChromeRemote
   class Client
-    attr_reader :ws
+    attr_reader :ws, :handlers
 
     def initialize
       @ws = WebSocketClient.new("ws://127.0.0.1:9222/ws?active=true")
+      @handlers = Hash.new {|hash, key| hash[key] = [] }
     end
   
     def send_cmd(command, params = {})  
@@ -13,10 +14,16 @@ module ChromeRemote
       
       ws.send_msg({method: command, params: params, id: msg_id}.to_json)
       
-      loop do
-        msg = read_msg
-        return msg["result"] if msg["id"] == msg_id
-      end
+      msg = read_until { |msg| msg["id"] == msg_id }
+      msg["result"]
+    end
+
+    def on(event_name, &block)
+      handlers[event_name] << block
+    end
+
+    def listen_until(&block)
+      read_until { block.call }
     end
   
     private
@@ -27,7 +34,23 @@ module ChromeRemote
     end
 
     def read_msg
-      JSON.parse(ws.read_msg)
+      msg = JSON.parse(ws.read_msg)
+
+      # Check if it’s an event and invoke any handlers
+      if event_name = msg["method"]
+        handlers[event_name].each do |handler|
+          handler.call(msg["params"])
+        end
+      end
+
+      msg
+    end
+
+    def read_until(&block)
+      loop do
+        msg = read_msg
+        return msg if block.call(msg)
+      end
     end
   end
 end

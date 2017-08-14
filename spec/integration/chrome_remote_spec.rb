@@ -3,7 +3,7 @@ require "json"
 
 RSpec.describe ChromeRemote do
 
-  let(:mock_server) { WebSocketServerMock.new(host: '127.0.0.1', port: 9222) }
+  let(:mock_server) { WebSocketServerMock.new("ws://127.0.0.1:9222/ws?active=true") }
 
   after(:each) { mock_server.close }
 

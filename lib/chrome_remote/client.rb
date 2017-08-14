@@ -25,6 +25,10 @@ module ChromeRemote
     def listen_until(&block)
       read_until { block.call }
     end
+
+    def listen
+      read_until { false }
+    end
   
     private
   

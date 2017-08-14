@@ -168,7 +168,7 @@ chrome.listen_until { requests == 5 }
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment or any of the scripts in the `/examples` directory (e.g. `bundle exec ruby examples/network_dump_and_screenshot.rb`).
 
 To install this gem onto your local machine, run `bundle exec rake install`. 
 

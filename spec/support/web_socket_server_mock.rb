@@ -1,6 +1,6 @@
 require "em-websocket"
 
-class WebServiceServerMock
+class WebSocketServerMock
   attr_reader :host, :port, :msg_handlers, :server, :thread
 
   def initialize(host: nil, port: nil)

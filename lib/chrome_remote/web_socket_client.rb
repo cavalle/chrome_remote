@@ -2,7 +2,7 @@ require "websocket/driver"
 require "chrome_remote/socket"
 
 module ChromeRemote
-  class WebSocket
+  class WebSocketClient
     attr_reader :socket, :driver, :messages, :status
 
     def initialize(url)

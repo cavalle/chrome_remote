@@ -2,6 +2,13 @@ require "spec_helper"
 require "json"
 
 RSpec.describe ChromeRemote do
+  around(:each) do |example|
+    Timeout::timeout(5) do
+      # TODO should the library implement timeouts on all the operations instead?
+      example.run
+    end
+  end
+
   subject { ChromeRemote.client }
 
   let!(:server) { WebSocketTestServer.new("ws://127.0.0.1:9222/ws?active=true") }
@@ -29,9 +36,7 @@ RSpec.describe ChromeRemote do
                           result: expected_result }.to_json)
       end
 
-      response = with_timeout do
-        subject.send_cmd "Page.navigate", url: "https://github.com"
-      end
+      response = subject.send_cmd "Page.navigate", url: "https://github.com"
 
       expect(response).to eq(expected_result)
       expect(server).to have_satisfied_all_expectations
@@ -58,9 +63,7 @@ RSpec.describe ChromeRemote do
 
       expect(received_events).to be_empty # we haven't listened yet
 
-      with_timeout do
-        subject.listen_until { received_events.size == 3 }
-      end
+      subject.listen_until { received_events.size == 3 }
 
       expect(received_events).to eq([
         ["Network.requestWillBeSent", { "param" => 1}],
@@ -84,9 +87,7 @@ RSpec.describe ChromeRemote do
 
       server.send_msg({ method: "Network.requestWillBeSent" }.to_json)
 
-      with_timeout do
-        subject.listen_until { received_events.size == 2 }
-      end
+      subject.listen_until { received_events.size == 2 }
 
       expect(received_events).to include(:first_handler)
       expect(received_events).to include(:second_handler)
@@ -107,9 +108,7 @@ RSpec.describe ChromeRemote do
 
       expect(received_events).to be_empty # we haven't listened yet
 
-      with_timeout do
-        subject.send_cmd "Page.navigate"
-      end
+      subject.send_cmd "Page.navigate"
 
       expect(received_events).to eq([:first_handler])
     end
@@ -137,6 +136,40 @@ RSpec.describe ChromeRemote do
     end
   end
 
-  describe "Waiting for events" 
+  describe "Waiting for events" do
+    it "waits for the next instance of an event" do
+      server.expect_msg do |msg|
+        msg = JSON.parse(msg)
+        server.send_msg({ id: msg["id"] }.to_json)
+
+        server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 1 } }.to_json)
+        server.send_msg({ method: "Page.loadEventFired",       params: { "event" => 2 } }.to_json)
+        server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 3 } }.to_json)
+      end
+
+      subject.send_cmd "Page.navigate", url: "https://github.com"
+      
+      result = subject.wait_for("Page.loadEventFired")
+      expect(result).to eq({ "event" => 2 })
+
+      result = subject.wait_for("Network.requestWillBeSent")
+      expect(result).to eq({ "event" => 3 })
+    end
+
+    it "subscribes and waits for the same event" do
+      received_events = 0
+      
+      subject.on "Network.requestWillBeSent" do |params|
+        received_events += 1
+      end
+
+      server.send_msg({ method: "Network.requestWillBeSent" }.to_json)
+
+      expect(received_events).to be_zero # we haven't listened yet
+
+      result = subject.wait_for("Network.requestWillBeSent")
+      expect(received_events).to eq(1)
+    end
+  end
   
 end

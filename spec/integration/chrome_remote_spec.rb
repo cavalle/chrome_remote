@@ -3,10 +3,8 @@ require "json"
 
 RSpec.describe ChromeRemote do
   around(:each) do |example|
-    Timeout::timeout(5) do
-      # TODO should the library implement timeouts on all the operations instead?
-      example.run
-    end
+    # TODO should the library implement timeouts on every operation instead?
+    Timeout::timeout(5) { example.run }
   end
 
   # Server needs to be running before the client

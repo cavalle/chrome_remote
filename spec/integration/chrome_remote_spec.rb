@@ -7,10 +7,10 @@ RSpec.describe ChromeRemote do
     Timeout::timeout(5) { example.run }
   end
 
-  WS_URL = "ws://127.0.0.1:9222/devtools/page/4a64d04e-f346-4460-be97-98e4a3dbf2fc"
+  WS_URL = "ws://localhost:9222/devtools/page/4a64d04e-f346-4460-be97-98e4a3dbf2fc"
 
   before(:each) do
-    stub_request(:get, "http://127.0.0.1:9222/json").to_return(
+    stub_request(:get, "http://localhost:9222/json").to_return(
       body: [{ "type": "page", "webSocketDebuggerUrl": WS_URL }].to_json
     )
   end
@@ -20,6 +20,35 @@ RSpec.describe ChromeRemote do
   let!(:client) { ChromeRemote.client }
 
   after(:each) { server.close }
+
+  describe "Initializing a client" do
+    it "returns a new client" do
+      client = double("client")
+      expect(ChromeRemote::Client).to receive(:new).with(WS_URL) { client }
+      expect(ChromeRemote.client).to eq(client)
+    end
+
+    it "uses the first page’s webSocketDebuggerUrl" do
+      stub_request(:get, "http://localhost:9222/json").to_return(
+        body: [
+          { "type": "background_page", "webSocketDebuggerUrl": "ws://one"   },
+          { "type": "page",            "webSocketDebuggerUrl": "ws://two"   },
+          { "type": "page",            "webSocketDebuggerUrl": "ws://three" }
+        ].to_json
+      )
+
+      expect(ChromeRemote::Client).to receive(:new).with("ws://two")
+      ChromeRemote.client
+    end
+
+    it "gets pages from the given host and port" do
+      stub_request(:get, "http://192.168.1.1:9292/json").to_return(
+        body: [{ "type": "page", "webSocketDebuggerUrl": "ws://one" }].to_json
+      )
+      expect(ChromeRemote::Client).to receive(:new).with("ws://one")
+      ChromeRemote.client host: '192.168.1.1', port: 9292
+    end
+  end
 
   describe "Sending commands" do
     it "sends commands using the DevTools protocol" do
@@ -173,5 +202,4 @@ RSpec.describe ChromeRemote do
       expect(received_events).to eq(1)
     end
   end
-  
 end

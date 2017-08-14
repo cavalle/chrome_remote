@@ -45,11 +45,11 @@ class WebSocketTestServer
   def start_server
     EM::WebSocket.run(:host => host, :port => port) do |ws|
       ws.onopen do |handshake|
-        if handshake.path != path
+        if handshake.path.to_s != path.to_s
           raise "Expected WebSocket path: #{path}. Got: #{handshake.path}"
         end
 
-        if handshake.query_string != query
+        if handshake.query_string.to_s != query.to_s
           raise "Expected WebSocket query_string: '#{query}'. Got: '#{handshake.query_string}'"
         end
       end

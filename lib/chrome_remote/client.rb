@@ -5,7 +5,9 @@ module ChromeRemote
     attr_reader :ws, :handlers
 
     def initialize
-      @ws = WebSocketClient.new("ws://127.0.0.1:9222/ws?active=true")
+      ws_url = get_ws_url
+
+      @ws = WebSocketClient.new(ws_url)
       @handlers = Hash.new {|hash, key| hash[key] = [] }
     end
   
@@ -60,6 +62,13 @@ module ChromeRemote
         msg = read_msg
         return msg if block.call(msg)
       end
+    end
+
+    def get_ws_url
+      response = Net::HTTP.get('127.0.0.1:9222', '/json')
+      response = JSON.parse(response)
+
+      response[0]["webSocketDebuggerUrl"]
     end
   end
 end

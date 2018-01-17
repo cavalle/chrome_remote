@@ -201,5 +201,15 @@ RSpec.describe ChromeRemote do
       result = client.wait_for("Network.requestWillBeSent")
       expect(received_events).to eq(1)
     end
+
+    it "waits for events with custom matcher block" do
+      server.send_msg({ method: "Page.lifecycleEvent", params: { "name" => "load" }}.to_json)
+      server.send_msg({ method: "Page.lifecycleEvent", params: { "name" => "DOMContentLoaded" }}.to_json)
+      result = client.wait_for do |event_name, event_params|
+        event_name == "Page.lifecycleEvent" && event_params["name"] == "DOMContentLoaded"
+      end
+
+      expect(result).to eq({"name" => "DOMContentLoaded"})
+    end
   end
 end

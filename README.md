@@ -1,6 +1,6 @@
 # ChromeRemote
 
-ChromeRemote is a client implementation of the [Chrome DevTools Protocol][1] in Ruby. It lets you instrument, inspect, debug and profile instances of Chrome/Chromium based browsers from your Ruby code.
+ChromeRemote is a client implementation of the [Chrome DevTools Protocol][1] in Ruby. It lets you remotely control, instrument, inspect, debug and profile instances of Chrome/Chromium based browsers from your Ruby code.
 
 [1]: https://chromedevtools.github.io/devtools-protocol/
 
@@ -127,6 +127,17 @@ chrome.send_cmd "Page.navigate", url: "https://github.com"
 
 chrome.wait_for "Page.loadEventFired"
 # => {:timestamp=>34}
+```
+
+You can also use `wait_for` with a block to implement a custom matcher on the event names and params you're waiting for:
+
+```ruby
+chrome = ChromeRemote.client
+chrome.send_cmd "Page.navigate", url: "https://github.com"
+
+client.wait_for do |event_name, event_params|
+  event_name == "Page.lifecycleEvent" && event_params["name"] == "load"
+end
 ```
 
 In certain occasions, after you have subscribed to one or several events, you may just want to process messages indefinitely, and let the event handlers process any event that may happen until you kill your script. For those cases, ChromeRemote provides the `ChromeRemote#listen` method:

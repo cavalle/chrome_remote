@@ -1,4 +1,4 @@
-require "chrome_remote/web_socket_client"
+require 'chrome_remote/web_socket_client'
 
 module ChromeRemote
   class Client
@@ -12,31 +12,33 @@ module ChromeRemote
     def send_cmd(command, params = {})
       msg_id = generate_unique_id
 
-      ws.send_msg({method: command, params: params, id: msg_id}.to_json)
+      ws.send_msg({ method: command, params: params, id: msg_id }.to_json)
 
-      msg = read_until { |msg| msg["id"] == msg_id }
-      msg["result"]
+      msg = read_until { |msg| msg['id'] == msg_id }
+      msg['result']
     end
 
     def on(event_name, &block)
       handlers[event_name] << block
     end
 
-    def listen_until(&block)
-      read_until { block.call }
+    def listen_until
+      read_until { yield }
     end
 
     def listen
       read_until { false }
     end
 
-    def wait_for(event_name=nil)
-      if event_name
-        msg = read_until { |msg| msg["method"] == event_name }
-      elsif block_given?
-        msg = read_until { |msg| yield(msg["method"], msg["params"]) }
+    def wait_for(event_name = nil, timeout: nil)
+      Timeout.timeout(timeout) do
+        if event_name
+          msg = read_until { |msg| msg['method'] == event_name }
+        elsif block_given?
+          msg = read_until { |msg| yield(msg['method'], msg['params']) }
+        end
+        msg['params']
       end
-      msg["params"]
     end
 
     private
@@ -50,19 +52,19 @@ module ChromeRemote
       msg = JSON.parse(ws.read_msg)
 
       # Check if it’s an event and invoke any handlers
-      if event_name = msg["method"]
+      if event_name = msg['method']
         handlers[event_name].each do |handler|
-          handler.call(msg["params"])
+          handler.call(msg['params'])
         end
       end
 
       msg
     end
 
-    def read_until(&block)
+    def read_until
       loop do
         msg = read_msg
-        return msg if block.call(msg)
+        return msg if yield(msg)
       end
     end
   end

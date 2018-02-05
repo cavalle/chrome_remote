@@ -67,7 +67,7 @@ RSpec.describe ChromeRemote do
         server.send_msg({ id: 9999, result: {} }.to_json)
 
         # Reply correlated with msg["id"]
-        server.send_msg({ id: msg["id"], 
+        server.send_msg({ id: msg["id"],
                           result: expected_result }.to_json)
       end
 
@@ -109,7 +109,7 @@ RSpec.describe ChromeRemote do
 
     it "allows to subscribe multiple times to the same event" do
       received_events = []
-      
+
       client.on "Network.requestWillBeSent" do |params|
         received_events << :first_handler
       end
@@ -130,7 +130,7 @@ RSpec.describe ChromeRemote do
 
     it "processes events when sending commands" do
       received_events = []
-      
+
       client.on "Network.requestWillBeSent" do |params|
         received_events << :first_handler
       end
@@ -153,13 +153,13 @@ RSpec.describe ChromeRemote do
       received_events = 0
 
       TestError = Class.new(StandardError)
-      
+
       client.on "Network.requestWillBeSent" do |params|
         received_events += 1
         # the client will listen indefinitely, raise an expection to get out of the loop
         raise TestError if received_events == expected_events
       end
-      
+
       expected_events.times do
         server.send_msg({ method: "Network.requestWillBeSent" }.to_json)
       end
@@ -179,7 +179,7 @@ RSpec.describe ChromeRemote do
       server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 1 } }.to_json)
       server.send_msg({ method: "Page.loadEventFired",       params: { "event" => 2 } }.to_json)
       server.send_msg({ method: "Network.requestWillBeSent", params: { "event" => 3 } }.to_json)
-    
+
       result = client.wait_for("Page.loadEventFired")
       expect(result).to eq({ "event" => 2 })
 
@@ -189,7 +189,7 @@ RSpec.describe ChromeRemote do
 
     it "subscribes and waits for the same event" do
       received_events = 0
-      
+
       client.on "Network.requestWillBeSent" do |params|
         received_events += 1
       end
@@ -210,6 +210,19 @@ RSpec.describe ChromeRemote do
       end
 
       expect(result).to eq({"name" => "DOMContentLoaded"})
+    end
+
+    it "raises a TimeoutException when it passes over the timeout threshold" do
+      thr = Thread.new do
+        sleep(2)
+        server.send_msg({ method: "Network.requestWillBeSent" }.to_json)
+      end
+
+      expect {
+        client.wait_for("Network.requestWillBeSent", timeout: 1)
+      }.to raise_error(Timeout::Error)
+
+      thr.join
     end
   end
 end

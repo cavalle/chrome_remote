@@ -4,8 +4,8 @@ module ChromeRemote
   class Client
     attr_reader :ws, :handlers
 
-    def initialize(ws_url)
-      @ws = WebSocketClient.new(ws_url)
+    def initialize(ws_url, web_socket_options = {})
+      @ws = WebSocketClient.new(ws_url, web_socket_options)
       @handlers = Hash.new { |hash, key| hash[key] = [] }
     end
 

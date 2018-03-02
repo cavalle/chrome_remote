@@ -7,13 +7,14 @@ module ChromeRemote
   class << self
     DEFAULT_OPTIONS = {
       host: "localhost",
-      port: 9222
+      port: 9222,
+      web_socket_options: {}
     }
 
     def client(options = {})
       options = DEFAULT_OPTIONS.merge(options)
 
-      Client.new(get_ws_url(options))
+      Client.new(get_ws_url(options), options[:web_socket_options])
     end
 
     private

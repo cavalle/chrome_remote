@@ -89,8 +89,9 @@ ChromeRemote provides a simple API that lets you send commands, and handle event
 To start with, you need an instance of the `ChromeRemote` class.
 
 ```ruby
-chrome = ChromeRemote.client host: 'localhost', # optional, default: localhost
-                             port: 9222         # optional, default: 9222
+chrome = ChromeRemote.client host: 'localhost',     # optional, default: localhost
+                             port: 9222,            # optional, default: 9222
+                             web_socket_options: {} # optional, default: {}, more: https://github.com/faye/websocket-driver-ruby
 ```
 
 Now, to send commands, ChromeRemote provides the `ChromeRemote#send_cmd` method. For example, this is how you make Chrome navigate to a url by sending the [Page.navigate][7] command:

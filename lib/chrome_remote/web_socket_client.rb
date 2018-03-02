@@ -7,7 +7,7 @@ module ChromeRemote
 
     def initialize(url)
       @socket = ChromeRemote::Socket.new(url)
-      @driver = ::WebSocket::Driver.client(socket)
+      @driver = ::WebSocket::Driver.client(socket, max_length: 100000000)
 
       @messages = []
       @status = :closed

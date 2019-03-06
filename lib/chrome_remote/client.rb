@@ -7,6 +7,7 @@ module ChromeRemote
     def initialize(ws_url)
       @ws = WebSocketClient.new(ws_url)
       @handlers = Hash.new { |hash, key| hash[key] = [] }
+      @last_id = 0
     end
 
     def send_cmd(command, params = {})
@@ -42,7 +43,6 @@ module ChromeRemote
     private
 
     def generate_unique_id
-      @last_id ||= 0
       @last_id += 1
     end
 

@@ -177,6 +177,17 @@ chrome.listen_until { requests == 5 }
 [8]: https://chromedevtools.github.io/devtools-protocol/tot/Network/#event-requestWillBeSent
 [9]: https://chromedevtools.github.io/devtools-protocol/tot/Page/#event-loadEventFired
 
+### Logger
+
+To log all incoming and outgoing messages you can pass [Logger](https://github.com/ruby/logger) compatible instance to client.
+
+```ruby
+client = ChromeRemote.client(logger: Logger.new($stdout))
+client.send_cmd('Page.enable')
+# I, [2019-03-06T22:32:28.433643 #5070]  INFO -- : SEND ► {"method":"Page.enable","params":{},"id":1}
+# I, [2019-03-06T22:32:28.440294 #5070]  INFO -- : ◀ RECV {"id":1,"result":{}}
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment or any of the scripts in the `/examples` directory (e.g. `bundle exec ruby examples/network_dump_and_screenshot.rb`).

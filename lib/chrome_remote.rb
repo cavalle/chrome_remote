@@ -19,11 +19,12 @@ module ChromeRemote
     private
 
     def get_ws_url(options)
-      response = Net::HTTP.get(options[:host], "/json", options[:port])
+      query = options[:token] ? "?token=#{options[:token]}" : ''
+      response = Net::HTTP.get(options[:host], "/json" + query, options[:port])
       # TODO handle unsuccesful request
       response = JSON.parse(response)
 
-      first_page = response.find {|e| e["type"] == "page"} 
+      first_page = response.find {|e| e["type"] == "page"}
       # TODO handle no entry found
       first_page["webSocketDebuggerUrl"]
     end

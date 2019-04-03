@@ -26,7 +26,7 @@ module ChromeRemote
 
       first_page = response.find {|e| e["type"] == "page"}
       # TODO handle no entry found
-      first_page["webSocketDebuggerUrl"]
+      first_page["webSocketDebuggerUrl"] + query
     end
   end
 end

@@ -11,10 +11,12 @@ module ChromeRemote
 
     def send_cmd(command, params = {})
       msg_id = generate_unique_id
+      payload = {method: command, params: params, id: msg_id}
+      session_id = params.delete(:session_id)
+      payload[:sessionId] = session_id if session_id
+      ws.send_msg(payload.to_json)
 
-      ws.send_msg({method: command, params: params, id: msg_id}.to_json)
-
-      msg = read_until { |msg| msg["id"] == msg_id }
+      msg = read_until { |msg| msg["id"] == msg_id && msg['sessionId'] == session_id }
       msg["result"]
     end
 

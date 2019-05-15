@@ -20,6 +20,7 @@ module ChromeRemote
 
     def get_ws_url(options)
       return options[:ws_endpoint_url] if options[:ws_endpoint_url]
+
       get_from_json_response(options)
     end
 

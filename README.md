@@ -1,5 +1,8 @@
 # ChromeRemote
 
+[![Gem Version](https://img.shields.io/gem/v/chrome_remote.svg?style=for-the-badge)](https://rubygems.org/gems/chrome_remote)
+[![Build Status](https://img.shields.io/travis/com/cavalle/chrome_remote/master?style=for-the-badge)](https://travis-ci.com/cavalle/chrome_remote)
+
 ChromeRemote is a client implementation of the [Chrome DevTools Protocol][1] in Ruby. It lets you remotely control, instrument, inspect, debug and profile instances of Chrome/Chromium based browsers from your Ruby code.
 
 [1]: https://chromedevtools.github.io/devtools-protocol/
@@ -82,7 +85,7 @@ Additionally, since version 59, you can use the `--headless` flag to start Chrom
 
 ### Using the ChromeRemote API
 
-The [Chrome DevTools Protocol][1] is divided into a number of domains ([Page][3], [DOM][4], [Debugger][5], [Network][6], etc.). Each domain defines a number of **commands** it supports and **events** it generates. 
+The [Chrome DevTools Protocol][1] is divided into a number of domains ([Page][3], [DOM][4], [Debugger][5], [Network][6], etc.). Each domain defines a number of **commands** it supports and **events** it generates.
 
 ChromeRemote provides a simple API that lets you send commands, and handle events of any of the domains in the protocol.
 
@@ -118,7 +121,7 @@ chrome.on "Network.requestWillBeSent" do |params|
   puts params["request"]["url"]
 end
 ```
-    
+
 With the `ChromeRemote#wait_for` method, you can wait until the next time a given event is triggered. For example, the following snippet navigates to a page and waits for the [Page.loadEventFired][9] event to happen:
 
 ```ruby
@@ -181,13 +184,13 @@ chrome.listen_until { requests == 5 }
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment or any of the scripts in the `/examples` directory (e.g. `bundle exec ruby examples/network_dump_and_screenshot.rb`).
 
-To install this gem onto your local machine, run `bundle exec rake install`. 
+To install this gem onto your local machine, run `bundle exec rake install`.
 
 To release a new version (if you're a maintainer), update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/cavalle/chrome_remote. 
+Bug reports and pull requests are welcome on GitHub at https://github.com/cavalle/chrome_remote.
 
 This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to follow the [code of conduct](https://github.com/cavalle/chrome_remote/blob/master/CODE_OF_CONDUCT.md).
 

@@ -1,7 +1,7 @@
 # ChromeRemote
 
 [![Gem Version](https://img.shields.io/gem/v/chrome_remote.svg?style=for-the-badge)](https://rubygems.org/gems/chrome_remote)
-[![Build Status](https://img.shields.io/travis/com/cavalle/chrome_remote/master?style=for-the-badge)](https://travis-ci.com/cavalle/chrome_remote)
+[![Build Status](https://img.shields.io/travis/cavalle/chrome_remote/master?style=for-the-badge)](https://travis-ci.org/cavalle/chrome_remote)
 
 ChromeRemote is a client implementation of the [Chrome DevTools Protocol][1] in Ruby. It lets you remotely control, instrument, inspect, debug and profile instances of Chrome/Chromium based browsers from your Ruby code.
 

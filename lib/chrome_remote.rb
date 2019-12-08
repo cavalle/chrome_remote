@@ -14,17 +14,23 @@ module ChromeRemote
 
     def client(options = {})
       options = DEFAULT_OPTIONS.merge(options)
+      logger = options.delete(:logger)
 
-      Client.new(get_ws_url(options))
+      Client.new(get_ws_url(options), logger)
     end
 
     private
 
     def get_ws_url(options)
-      response = Net::HTTP.get(options[:host], "/json", options[:port])
+      path = '/json'
+      path += '/new?about:blank'  if options.key?(:new_tab)
+
+      response = Net::HTTP.get(options[:host], path, options[:port])
       response = JSON.parse(response)
 
       raise ChromeConnectionError unless response.any?
+
+      return response['webSocketDebuggerUrl'] if options.key?(:new_tab)
 
       first_page = response.find {|e| e["type"] == "page"}
 

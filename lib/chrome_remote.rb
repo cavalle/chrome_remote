@@ -24,7 +24,7 @@ module ChromeRemote
       # TODO handle unsuccesful request
       response = JSON.parse(response)
 
-      first_page = response.find {|e| e["type"] == "page"} 
+      first_page = response.find {|e| e["type"] == "page"}
       # TODO handle no entry found
       first_page["webSocketDebuggerUrl"]
     end

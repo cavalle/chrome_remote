@@ -15,11 +15,11 @@ module ChromeRemote
       setup_driver
       start_driver
     end
-    
+
     def send_msg(msg)
       driver.text msg
     end
-    
+
     def read_msg
       parse_input until msg = messages.shift
       msg
@@ -31,11 +31,11 @@ module ChromeRemote
       driver.on(:message) do |e|
         messages << e.data
       end
-      
+
       driver.on(:error) do |e|
         raise e.message
       end
-      
+
       driver.on(:close) do |e|
         @status = :closed
       end

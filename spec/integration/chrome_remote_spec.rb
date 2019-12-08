@@ -56,6 +56,16 @@ RSpec.describe ChromeRemote do
       expect(ChromeRemote::Client).to receive(:new).with(WS_URL, logger) { client }
       expect(ChromeRemote.client(logger: logger)).to eq(client)
     end
+
+    context "with new tab" do
+      it "creates new tab on the given host and port" do
+        stub_request(:get, "http://192.168.1.1:9292/json/new?about:blank").to_return(
+          body: { "type": "page", "webSocketDebuggerUrl": "ws://one" }.to_json
+        )
+        expect(ChromeRemote::Client).to receive(:new).with("ws://one", nil)
+        ChromeRemote.client host: '192.168.1.1', port: 9292, new_tab: true
+      end
+    end
   end
 
   describe "Logging" do

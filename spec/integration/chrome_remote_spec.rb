@@ -41,6 +41,25 @@ RSpec.describe ChromeRemote do
       ChromeRemote.client
     end
 
+    it "retries if no pages are returned" do
+      request_count = 0
+      stub_request(:get, "http://localhost:9222/json").to_return do |request|
+        request_count += 1
+        if request_count == 1
+          { body: [].to_json }
+        else
+          {
+            body: [
+              { "type": "page", "webSocketDebuggerUrl": "ws://two" },
+            ].to_json
+          }
+        end
+      end
+
+      expect(ChromeRemote::Client).to receive(:new).with("ws://two", nil)
+      ChromeRemote.client
+    end
+
     it "gets pages from the given host and port" do
       stub_request(:get, "http://192.168.1.1:9292/json").to_return(
         body: [{ "type": "page", "webSocketDebuggerUrl": "ws://one" }].to_json

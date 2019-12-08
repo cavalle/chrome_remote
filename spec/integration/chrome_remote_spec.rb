@@ -24,7 +24,7 @@ RSpec.describe ChromeRemote do
   describe "Initializing a client" do
     it "returns a new client" do
       client = double("client")
-      expect(ChromeRemote::Client).to receive(:new).with(WS_URL) { client }
+      expect(ChromeRemote::Client).to receive(:new).with(WS_URL, nil) { client }
       expect(ChromeRemote.client).to eq(client)
     end
 
@@ -37,7 +37,7 @@ RSpec.describe ChromeRemote do
         ].to_json
       )
 
-      expect(ChromeRemote::Client).to receive(:new).with("ws://two")
+      expect(ChromeRemote::Client).to receive(:new).with("ws://two", nil)
       ChromeRemote.client
     end
 
@@ -45,8 +45,16 @@ RSpec.describe ChromeRemote do
       stub_request(:get, "http://192.168.1.1:9292/json").to_return(
         body: [{ "type": "page", "webSocketDebuggerUrl": "ws://one" }].to_json
       )
-      expect(ChromeRemote::Client).to receive(:new).with("ws://one")
+      expect(ChromeRemote::Client).to receive(:new).with("ws://one", nil)
       ChromeRemote.client host: '192.168.1.1', port: 9292
+    end
+
+    it "accepts logger" do
+      logger = double("logger")
+      client = double("client")
+
+      expect(ChromeRemote::Client).to receive(:new).with(WS_URL, logger) { client }
+      expect(ChromeRemote.client(logger: logger)).to eq(client)
     end
 
     context "with new tab" do
@@ -54,9 +62,25 @@ RSpec.describe ChromeRemote do
         stub_request(:get, "http://192.168.1.1:9292/json/new?about:blank").to_return(
           body: { "type": "page", "webSocketDebuggerUrl": "ws://one" }.to_json
         )
-        expect(ChromeRemote::Client).to receive(:new).with("ws://one")
+        expect(ChromeRemote::Client).to receive(:new).with("ws://one", nil)
         ChromeRemote.client host: '192.168.1.1', port: 9292, new_tab: true
       end
+    end
+  end
+
+  describe "Logging" do
+    let(:logger) { double("logger") }
+    let!(:client) { ChromeRemote.client(logger: logger) }
+
+    it "logs incoming and outcoming messages" do
+      server.expect_msg do |msg|
+        msg = JSON.parse(msg)
+        server.send_msg({ id: msg["id"], params: {} }.to_json)
+      end
+
+      expect(logger).to receive(:info).with('SEND ► {"method":"Page.enable","params":{},"id":1}')
+      expect(logger).to receive(:info).with('◀ RECV {"id":1,"params":{}}')
+      client.send_cmd('Page.enable')
     end
   end
 

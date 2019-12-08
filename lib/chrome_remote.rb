@@ -12,8 +12,9 @@ module ChromeRemote
 
     def client(options = {})
       options = DEFAULT_OPTIONS.merge(options)
+      logger = options.delete(:logger)
 
-      Client.new(get_ws_url(options))
+      Client.new(get_ws_url(options), logger)
     end
 
     private

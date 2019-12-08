@@ -36,7 +36,7 @@ class WebSocketTestServer
   private
 
   def start_reactor
-    @thread = Thread.new { EM.run }    
+    @thread = Thread.new { EM.run }
     thread.abort_on_exception = true
 
     while not EM.reactor_running?; end

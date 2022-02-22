@@ -1,3 +1,7 @@
+# Discontinued
+
+This library is no longer maintained. Check https://github.com/rubycdp/ferrum.
+
 # ChromeRemote
 
 [![Gem Version](https://img.shields.io/gem/v/chrome_remote.svg?style=for-the-badge)](https://rubygems.org/gems/chrome_remote)

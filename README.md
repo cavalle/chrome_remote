@@ -1,6 +1,6 @@
 # Discontinued
 
-This library is no longer maintained. Check https://github.com/rubycdp/ferrum.
+This library is not actively maintained. Check https://github.com/rubycdp/ferrum for a replacement.
 
 # ChromeRemote
 
